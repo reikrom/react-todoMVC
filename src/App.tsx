@@ -1,6 +1,7 @@
 import React from 'react'
 import logo from './logo.svg'
 import { nanoid } from 'nanoid'
+import cn from 'clsx'
 import './App.css'
 import 'todomvc-app-css/index.css'
 
@@ -13,9 +14,9 @@ interface Task {
 function App() {
     const [list, setList] = React.useState<Task[] | []>([])
     const [input, setInput] = React.useState<string>('')
-    const [filter, setFilter] = React.useState<'all' | 'active' | 'completed'>(
-        'all'
-    )
+    const [currFilter, setFilter] = React.useState<
+        'all' | 'active' | 'completed'
+    >('all')
 
     const addTask = (e) => {
         setInput(e.target.value)
@@ -43,6 +44,7 @@ function App() {
     }
     const destroyTask = (id: string) => {
         // clear by id
+        setList((state) => state.filter((item) => item.id !== id))
     }
 
     const showActive = () => {
@@ -112,40 +114,25 @@ function App() {
                             </div>
                             <input className="edit" value="Rule the web" />
                         </li>
-                        {list.map((item) => {
-                            return item.status === 'active' ? (
-                                <li>
-                                    <div className="view">
-                                        <input
-                                            className="toggle"
-                                            type="checkbox"
-                                        />
-                                        <label>{item.content}</label>
-                                        <button className="destroy"></button>
-                                    </div>
-                                    <input
-                                        className="edit"
-                                        value="Rule the web"
-                                    />
-                                </li>
-                            ) : (
-                                <li className="completed">
-                                    <div className="view">
-                                        <input
-                                            className="toggle"
-                                            type="checkbox"
-                                            checked
-                                        />
-                                        <label>Taste JavaScript</label>
-                                        <button className="destroy"></button>
-                                    </div>
-                                    <input
-                                        className="edit"
-                                        value="Create a TodoMVC template"
-                                    />
-                                </li>
-                            )
-                        })}
+                        {list.map((item: Task) => (
+                            <li
+                                className={cn(
+                                    item.status === 'completed'
+                                        ? 'completed'
+                                        : ''
+                                )}
+                            >
+                                <div className="view">
+                                    <input className="toggle" type="checkbox" />
+                                    <label>{item.content}</label>
+                                    <button
+                                        onClick={() => destroyTask(item.id)}
+                                        className="destroy"
+                                    ></button>
+                                </div>
+                                <input className="edit" value="Rule the web" />
+                            </li>
+                        ))}
                     </ul>
                 </section>
                 {/* <!-- This footer should be hidden by default and shown when there are todos --> */}
