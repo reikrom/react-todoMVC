@@ -15,14 +15,15 @@ function App() {
     {id: '1', content: 'test1', completed: false},
     {id: '2', content: 'test2', completed: true},
   ])
+
   const [input, setInput] = React.useState<string>('')
+  const [editInput, setEditInput] = React.useState('')
   const [currFilter, setFilter] = React.useState<
     'all' | 'active' | 'completed'
   >('all')
 
   const addTask = e => {
     setInput(e.target.value)
-    // e.target.value
   }
 
   const submitTask = e => {
@@ -40,11 +41,14 @@ function App() {
   }
 
   const clearCompleted = () => {
-    // clear all
+    list.forEach(item => {
+      if (item.completed) {
+        destroyTask(item.id)
+      }
+    })
   }
 
   const completeTask = (id: string) => {
-    console.log('%cid%o', 'background: red; color: white;', id)
     setList(state => {
       const newState = [...state]
       return newState.map(item => {
@@ -57,19 +61,13 @@ function App() {
   }
 
   const destroyTask = (id: string) => {
-    // clear by id
     setList(state => state.filter(item => item.id !== id))
   }
 
-  const showActive = () => {
-    // show all active tasks
-  }
-  const showCompleted = () => {
-    // show all Completed tasks
-  }
-
-  const showAll = () => {
-    // show all tasks
+  const changeFilter = filter => {
+    if (filter !== currFilter) {
+      setFilter(filter)
+    }
   }
 
   const toggleAll = () => {
@@ -80,6 +78,24 @@ function App() {
       }
       return newState.map(item => ({...item, completed: !item.completed}))
     })
+  }
+
+  const handleEdit = e => {}
+
+  let currentList: Task[] | [] = []
+  let currentItemsLeft = 0
+
+  if (currFilter === 'all') {
+    currentList = list
+    currentItemsLeft = list.filter(item => !item.completed).length
+  }
+  if (currFilter === 'active') {
+    currentList = list.filter(item => !item.completed)
+    currentItemsLeft = currentList.length
+  }
+  if (currFilter === 'completed') {
+    currentList = list.filter(item => item.completed)
+    currentItemsLeft = 0
   }
 
   return (
@@ -107,10 +123,7 @@ function App() {
           />
           <label htmlFor="toggle-all">Mark all as complete</label>
           <ul className="todo-list">
-            {/* <!-- These are here just to show the structure of the list items -->
-				                  	<!-- List items should get the class `editing` when editing and `completed` when marked as completed --> */}
-
-            {list.map((item: Task) => (
+            {currentList.map((item: Task) => (
               <li
                 key={item.id}
                 className={cn(item.completed ? 'completed' : '')}
@@ -122,43 +135,68 @@ function App() {
                     className="toggle"
                     type="checkbox"
                   />
-                  <label>{item.content}</label>
+                  <label onDoubleClick={handleEdit}>{item.content}</label>
                   <button
                     onClick={() => destroyTask(item.id)}
                     className="destroy"
                   ></button>
                 </div>
                 <input
-                  value={item.content}
-                  className="edit"
+                  value={'item.content'}
+                  className="editing"
+                  style={{
+                    // TODO: implement edit
+                    background: 'red',
+                  }}
                   onChange={() => {}}
                 />
               </li>
             ))}
           </ul>
         </section>
-        {/* <!-- This footer should be hidden by default and shown when there are todos --> */}
         <footer className="footer">
-          {/* <!-- This should be `0 items left` by default --> */}
           <span className="todo-count">
-            <strong>{list.length}</strong> item left
+            <strong>{currentItemsLeft}</strong>{' '}
+            {currentItemsLeft === 1 ? 'item ' : 'items '}
+            left
           </span>
           {/* <!-- Remove this if you don't implement routing --> */}
+          {/* // Component does not re-render on window.location.pathName change
+              // I'm avoiding class components and react-router, state it is then */}
           <ul className="filters">
             <li>
-              <a className="selected" href="#/">
+              <a
+                onClick={() => changeFilter('all')}
+                className={currFilter === 'all' ? 'selected' : ''}
+                href="#/"
+              >
                 All
               </a>
             </li>
             <li>
-              <a href="#/active">Active</a>
+              <a
+                onClick={() => changeFilter('active')}
+                className={currFilter === 'active' ? 'selected' : ''}
+                href="#/active"
+              >
+                Active
+              </a>
             </li>
             <li>
-              <a href="#/completed">Completed</a>
+              <a
+                onClick={() => changeFilter('completed')}
+                className={currFilter === 'completed' ? 'selected' : ''}
+                href="#/completed"
+              >
+                Completed
+              </a>
             </li>
           </ul>
-          {/* <!-- Hidden if no completed items are left ↓ --> */}
-          <button className="clear-completed">Clear completed</button>
+          {list.some(item => item.completed) ? (
+            <button onClick={clearCompleted} className="clear-completed">
+              Clear completed
+            </button>
+          ) : null}
         </footer>
       </section>
       <footer className="info">
@@ -169,7 +207,7 @@ function App() {
         </p>
         {/* <!-- Change this out with your name and url ↓ --> */}
         <p>
-          Created by <a href="http://todomvc.com">you</a>
+          Created by <a href="http://todomvc.com">Rei Krom</a>
         </p>
         <p>
           Part of <a href="http://todomvc.com">TodoMVC</a>
